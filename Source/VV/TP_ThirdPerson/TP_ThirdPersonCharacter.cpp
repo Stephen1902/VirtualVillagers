@@ -2,14 +2,18 @@
 
 #include "TP_ThirdPersonCharacter.h"
 
+#include "AI_DetailsWidget.h"
 #include "AI_Needs.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "VV/Framework/VVGameState.h"
+#include "VV/Player/VVPlayerController.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ATP_ThirdPersonCharacter
@@ -17,6 +21,8 @@
 
 ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -42,6 +48,18 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Create the scene component for the render camera
+	RenderSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("Render Scene Comp"));
+	RenderSceneComp->SetupAttachment(GetRootComponent());
+	RenderSceneComp->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+
+	// Create the render component
+	RenderCameraComp = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Render Camera Comp"));
+	RenderCameraComp->SetupAttachment(RenderSceneComp);
+	RenderCameraComp->SetRelativeLocation(FVector(-1000.f, 0.f, 0.f));
+	RenderCameraComp->FOVAngle = 10.f;
+	RenderCameraComp->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
@@ -57,6 +75,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 
 	bCanBePickedUp = false;
 	bCanBeDragged = true;
+	bIsBeingDragged = false;
 }
 
 void ATP_ThirdPersonCharacter::BeginPlay()
@@ -91,6 +110,25 @@ void ATP_ThirdPersonCharacter::BeginPlay()
 			}
 		}
 	}
+/*
+	if (RenderCameraComp)
+	{
+		TArray<AActor*> ShownItems;
+		ShownItems.AddUnique(this);
+		//RenderCameraComp->
+	}
+
+	*/
+}
+
+void ATP_ThirdPersonCharacter::AddWidget(AVVPlayerController* ControllerIn)
+{
+	if (ControllerIn && DetailsWidget)
+	{
+		UAI_DetailsWidget* DW = CreateWidget<UAI_DetailsWidget>(GetWorld(), DetailsWidget);
+		DW->AddToViewport();
+		ControllerIn->SetDetailsWidgetRef(DW);
+	}
 }
 
 void ATP_ThirdPersonCharacter::SetGameStateRef(AVVGameState* GameStateIn)
@@ -114,6 +152,24 @@ void ATP_ThirdPersonCharacter::CheckForDayChange(FText DayAsText, int32 DayAsInt
 		UpdateStageInfo();
 	}
 	
+}
+
+void ATP_ThirdPersonCharacter::DragHasStarted()
+{
+	bIsBeingDragged = true;
+}
+
+void ATP_ThirdPersonCharacter::UpdateDraggedPosition()
+{
+	if (bIsBeingDragged)
+	{
+		
+	}
+}
+
+void ATP_ThirdPersonCharacter::DragHasEnded()
+{
+	bIsBeingDragged = false;
 }
 
 void ATP_ThirdPersonCharacter::UpdateStageInfo()
@@ -206,7 +262,8 @@ void ATP_ThirdPersonCharacter::GetItemInfo_Implementation(FText& ItemNameOut, FT
 	 
 }
 
-bool ATP_ThirdPersonCharacter::GetCanBeDragged_Implementation()
+bool ATP_ThirdPersonCharacter::GetCanBeDragged_Implementation(ATP_ThirdPersonCharacter*& Character)
 {
+	Character = this;
 	return bCanBeDragged;
 }

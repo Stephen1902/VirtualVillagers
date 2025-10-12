@@ -31,5 +31,5 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void GetItemInfo(FText& ItemNameOut, FText& ItemDescOut); 
 	UFUNCTION(BlueprintNativeEvent)
-	bool GetCanBeDragged();
+	bool GetCanBeDragged(class ATP_ThirdPersonCharacter*& Character);
 };

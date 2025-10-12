@@ -45,5 +45,5 @@ private:
 	virtual AActor* OnOverlapBegin_Implementation() override;
 	virtual void OnOverlapEnd_Implementation() override;
 	virtual void GetItemInfo_Implementation(FText& ItemNameOut, FText& ItemDescOut) override;
-	virtual bool GetCanBeDragged_Implementation() override;
+	virtual bool GetCanBeDragged_Implementation(ATP_ThirdPersonCharacter*& Character) override;
 };

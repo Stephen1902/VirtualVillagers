@@ -5,7 +5,13 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PlayerWidget.h"
+#include "Components/Image.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "VV/TP_ThirdPerson/AI_DetailsWidget.h"
+#include "VV/TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 
 AVVPlayerController::AVVPlayerController()
 {
@@ -20,6 +26,7 @@ AVVPlayerController::AVVPlayerController()
 	TimeBeforeDragging = 0.5f;
 
 	bIsHolding = false;
+	CharacterToDrag = nullptr;
 }
 
 void AVVPlayerController::BeginPlay()
@@ -55,6 +62,18 @@ void AVVPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	
+	if (bIsHolding)
+    {
+    	TimeLeftHeld += DeltaSeconds;
+    	FString StringToDisplay = FString::SanitizeFloat(TimeLeftHeld);
+    	GEngine->AddOnScreenDebugMessage(0, 0.f, FColor::Green, *StringToDisplay);
+    	// TODO Deal with what happens when the threshold is reached
+    	if (TimeLeftHeld >= TimeBeforeDragging)
+    	{
+    		SeeIfDragging();
+    	}
+    }
+
 	if (bIsPanning)
 	{
 		DealWithPanning();
@@ -64,17 +83,7 @@ void AVVPlayerController::Tick(float DeltaSeconds)
 		CheckForEdgeMovement();
 	}
 
-	if (bIsHolding)
-	{
-		TimeLeftHeld += DeltaSeconds;
-		FString StringToDisplay = FString::SanitizeFloat(TimeLeftHeld);
-		GEngine->AddOnScreenDebugMessage(0, 0.f, FColor::Green, *StringToDisplay);
-		// TODO Deal with what happens when the threshold is reached
-		if (TimeLeftHeld >= TimeBeforeDragging)
-		{
-			
-		}
-	}
+
 }
 
 void AVVPlayerController::SetupInputComponent()
@@ -97,6 +106,9 @@ void AVVPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("LeftMouseUse", IE_Pressed, this, &AVVPlayerController::DealWithLeftMousePressed);
 	InputComponent->BindAction(TEXT("LeftMouseUse"), IE_Released, this, &AVVPlayerController::DealWithLeftMouseReleased);
+
+	InputComponent->BindAction("TempAction", IE_Pressed, this, &AVVPlayerController::TempActionPressed);
+	InputComponent->BindAction("TempAction", IE_Released, this, &AVVPlayerController::TempActionReleased);
 }
 
 float AVVPlayerController::MovementSpeedCalculation() const
@@ -280,19 +292,24 @@ void AVVPlayerController::FastMoveMultiplierReleased()
 
 void AVVPlayerController::DealWithLeftMousePressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pressed"));
-	// We only want to be able to drag things that can be
+	// We only want to be able to drag things that can be moved around
 	if (ActorBeenHit && UKismetSystemLibrary::DoesImplementInterface(ActorBeenHit, UInteractInterface::StaticClass()))
 	{
-		bIsHolding = Execute_GetCanBeDragged(ActorBeenHit);
+		bIsHolding = Execute_GetCanBeDragged(ActorBeenHit, CharacterToDrag);
 	}
 }
 
 void AVVPlayerController::DealWithLeftMouseReleased()
 {
+	if (bIsDragging)
+	{
+		
+	}
+	
 	bIsHolding = false;
 	TimeLeftHeld = 0.f;
 
+	// This needs to be kept here to ensure we can click correctly next time.  
 	FInputModeGameOnly InputMode;
 	InputMode.SetConsumeCaptureMouseDown(true);
 	SetInputMode(InputMode);
@@ -350,4 +367,52 @@ void AVVPlayerController::CheckForInteractive()
 			ActorBeenHit = nullptr;
 		}
 	}
+}
+
+void AVVPlayerController::SeeIfDragging()
+{
+	const float MouseXFloat = InputComponent->GetAxisValue(TEXT("MOUSEX"));
+	const float MouseYFloat = InputComponent->GetAxisValue(TEXT("MOUSEY"));
+	if (MouseXFloat != 0.f || MouseYFloat != 0.f)
+	{
+		if (!bIsDragging)
+		{
+			bIsDragging = true;
+			
+		}
+	}
+}
+
+void AVVPlayerController::TempActionPressed()
+{
+	TArray<AActor*> Characters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATP_ThirdPersonCharacter::StaticClass(), Characters);
+
+	const int32 NumOfChars = FMath::RandRange(0, Characters.Num() - 1);
+	ATP_ThirdPersonCharacter* FoundCharacter = Cast<ATP_ThirdPersonCharacter>(Characters[1]);
+	if (FoundCharacter)
+	{
+		FoundCharacter->AddWidget(this);
+	}
+		/*
+		USceneCaptureComponent2D* RenderTarget = FoundCharacter->GetRenderCamera();
+		
+		DetailsWidgetRef = CreateWidget<UAI_DetailsWidget>(this, AIDetailsWidget);
+		DetailsWidgetRef->AddToViewport();
+		*/
+		
+}
+
+void AVVPlayerController::TempActionReleased()
+{
+	if (DetailsWidgetRef)
+	{
+		DetailsWidgetRef->RemoveFromParent();
+		DetailsWidgetRef = nullptr;
+	}
+}
+
+void AVVPlayerController::SetDetailsWidgetRef(UAI_DetailsWidget* WidgetIn)
+{
+	DetailsWidgetRef = WidgetIn;
 }

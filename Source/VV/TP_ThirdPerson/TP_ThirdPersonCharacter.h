@@ -105,6 +105,13 @@ class ATP_ThirdPersonCharacter : public ACharacter, public IInteractInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	/** Scene component for the render camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* RenderSceneComp;
+
+	/** Render camera component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USceneCaptureComponent2D* RenderCameraComp; 
 
 protected:
 	// Called at game start
@@ -125,6 +132,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI Char")
 	bool bCanBeDragged;
+
+	// Information widget to display for this AI Character
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI Char")
+	TSubclassOf<class UAI_DetailsWidget> DetailsWidget;
 public:
 	ATP_ThirdPersonCharacter();
 
@@ -133,12 +144,18 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	void AddWidget(class AVVPlayerController* ControllerIn);
+	
 	UPROPERTY()
 	AVVGameState* GameStateRef;
 	void SetGameStateRef(AVVGameState* GameStateIn);
 
 	UFUNCTION()
 	void CheckForDayChange(FText DayAsText, int32 DayAsInt);
+
+	void DragHasStarted();
+	void UpdateDraggedPosition();
+	void DragHasEnded();
 
 private:
 	UPROPERTY()
@@ -148,10 +165,11 @@ private:
 	void UpdateStageInfo();
 
 	bool bCanBePickedUp;
+	bool bIsBeingDragged;
 
 	virtual AActor* OnOverlapBegin_Implementation() override;
 	virtual void OnOverlapEnd_Implementation() override;
 	virtual void GetItemInfo_Implementation(FText& ItemNameOut, FText& ItemDescOut) override;
-	virtual bool GetCanBeDragged_Implementation() override;
+	virtual bool GetCanBeDragged_Implementation(ATP_ThirdPersonCharacter*& Character) override;
 };
 

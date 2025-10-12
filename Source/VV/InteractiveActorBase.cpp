@@ -59,7 +59,8 @@ void AInteractiveActorBase::GetItemInfo_Implementation(FText& ItemNameOut, FText
 	ItemDescOut = ItemDescription;
 }
 
-bool AInteractiveActorBase::GetCanBeDragged_Implementation()
+bool AInteractiveActorBase::GetCanBeDragged_Implementation(ATP_ThirdPersonCharacter*& Character)
 {
+	Character = nullptr;
 	return bCanBeDragged;
 }

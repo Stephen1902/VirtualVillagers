@@ -50,6 +50,8 @@ protected:
 	// Sets up the player input
 	virtual void SetupInputComponent() override;
 
+	
+
 private:
 	// function to adjust movement speed, depending on how far the camera is zoomed
 	float MovementSpeedCalculation() const;
@@ -90,5 +92,16 @@ private:
 	float TimeLeftHeld;
 	bool bIsHolding;
 	bool bIsDragging;
+	UPROPERTY()
+	ATP_ThirdPersonCharacter* CharacterToDrag;
+	void SeeIfDragging();
+
+	void TempActionPressed();
+	void TempActionReleased();
+	UPROPERTY()
+	class UAI_DetailsWidget* DetailsWidgetRef;
+
+public:
+	void SetDetailsWidgetRef(UAI_DetailsWidget* WidgetIn);
 };
 
