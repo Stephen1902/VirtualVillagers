@@ -22,6 +22,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Controller")
 	TSubclassOf<class UPlayerWidget> PlayerWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Controller")
+	TSubclassOf<class UAI_DetailsWidget> AI_DetailsWidget;
 	
 	// Multiplier for the Mouse Axis when panning.  Higher is faster.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Controller")
@@ -103,5 +106,7 @@ private:
 
 public:
 	void SetDetailsWidgetRef(UAI_DetailsWidget* WidgetIn);
+
+	void ShowDetailsWidget();
 };
 

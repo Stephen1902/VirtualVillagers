@@ -32,6 +32,8 @@ AVVPlayerController::AVVPlayerController()
 void AVVPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	bBlockInput = 0;
 	
 	PlayerPawnRef = Cast<AVVPlayerPawn>(GetPawn());
 
@@ -178,11 +180,7 @@ void AVVPlayerController::PanCameraReleased()
 {
 	bDisableCamNav = false;
 	bIsPanning = false;
-
-	// When the mouse in on screen, it will only track to the edges if in Game mode only
-	FInputModeGameOnly InputMode;
-	InputMode.SetConsumeCaptureMouseDown(true);
-	SetInputMode(InputMode);
+	
 }
 
 void AVVPlayerController::DealWithPanning()
@@ -232,10 +230,21 @@ void AVVPlayerController::Zoom(float Value)
 
 void AVVPlayerController::CheckForEdgeMovement()
 {
+	// When the mouse in on screen, it will only track to the edges if in Game mode only
+	/*FInputModeGameOnly InputMode;
+	InputMode.SetConsumeCaptureMouseDown(true);
+	SetInputMode(InputMode);
+	*/
 	if (PlayerPawnRef)
 	{
+		/**
 		const float MouseXFloat = InputComponent->GetAxisValue(TEXT("MOUSEX"));
 		const float MouseYFloat = InputComponent->GetAxisValue(TEXT("MOUSEY"));
+		*/
+
+		float MouseXFloat, MouseYFloat;
+		GetMousePosition(MouseXFloat, MouseYFloat);
+			
 		if (MouseXFloat != 0.f || MouseYFloat != 0.f)
 		{
 			int32 ViewportX, ViewportY;
@@ -278,6 +287,9 @@ void AVVPlayerController::CheckForEdgeMovement()
 
 		PlayerPawnRef->AddActorLocalOffset(FVector(EdgeMoveSpeedY, EdgeMoveSpeedX, 0.f));
 	}
+/*
+	FInputModeGameAndUI();
+	*/
 }
 
 void AVVPlayerController::FastMoveMultiplierPressed()
@@ -297,6 +309,10 @@ void AVVPlayerController::DealWithLeftMousePressed()
 	{
 		bIsHolding = Execute_GetCanBeDragged(ActorBeenHit, CharacterToDrag);
 	}
+	else
+	{
+		CharacterToDrag = nullptr;
+	}
 }
 
 void AVVPlayerController::DealWithLeftMouseReleased()
@@ -310,10 +326,10 @@ void AVVPlayerController::DealWithLeftMouseReleased()
 	TimeLeftHeld = 0.f;
 
 	// This needs to be kept here to ensure we can click correctly next time.  
-	FInputModeGameOnly InputMode;
+	/*FInputModeGameOnly InputMode;
 	InputMode.SetConsumeCaptureMouseDown(true);
 	SetInputMode(InputMode);
-	
+	*/
 	if (PlayerPawnRef)
 	{
 		if (ActorBeenHit && UKismetSystemLibrary::DoesImplementInterface(ActorBeenHit, UInteractInterface::StaticClass()))
@@ -348,7 +364,9 @@ void AVVPlayerController::CheckForInteractive()
 				}
 				
 				ActorBeenHit = Execute_OnOverlapBegin(HitResult.GetActor());
-				UE_LOG(LogTemp, Warning, TEXT("ActorBeenHit set to %s"), *ActorBeenHit->GetName());
+				Execute_GetCanBeDragged(ActorBeenHit, CharacterToDrag);
+				// If the CharacterToDrag is not valid, the details button should not be valid
+				PlayerWidgetRef->SetDetailsButtonStatus(CharacterToDrag != nullptr);
 			}
 		}
 	}
@@ -415,4 +433,27 @@ void AVVPlayerController::TempActionReleased()
 void AVVPlayerController::SetDetailsWidgetRef(UAI_DetailsWidget* WidgetIn)
 {
 	DetailsWidgetRef = WidgetIn;
+}
+
+void AVVPlayerController::ShowDetailsWidget()
+{
+	if (AI_DetailsWidget && PlayerWidgetRef)
+	{
+		if (!DetailsWidgetRef)
+		{
+			DetailsWidgetRef = CreateWidget<UAI_DetailsWidget>(this, AI_DetailsWidget);
+		}
+
+		// Check if it's the player widget in the viewport, swap with the details widget
+		if (PlayerWidgetRef->IsInViewport())
+		{
+			PlayerWidgetRef->RemoveFromParent();
+			DetailsWidgetRef->AddToViewport();
+		}
+		else
+		{
+			DetailsWidgetRef->RemoveFromParent();
+			PlayerWidgetRef->AddToViewport();
+		}
+	}
 }

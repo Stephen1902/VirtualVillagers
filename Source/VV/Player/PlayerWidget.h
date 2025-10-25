@@ -44,6 +44,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Widget", META=(BindWidget))
 	UTextBlock* ItemDescription;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Widget", META=(BindWidget))
+	UButton* DetailsButton;
 private:
 	UPROPERTY()
 	class AVVGameState* GameStateRef;
@@ -54,6 +57,12 @@ private:
 	UFUNCTION()
 	void OnDayChangeReceived(FText DayAtText, int32 DayAsInt);
 
+	UFUNCTION()
+	void OnDetailsButtonClicked();
+
+
 public:
 	void SetItemInfo(FText NameTextIn, FText DescriptionTextIn);
+
+	void SetDetailsButtonStatus(const bool StatusIn);
 };
