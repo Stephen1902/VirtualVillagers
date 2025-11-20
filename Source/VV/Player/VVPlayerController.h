@@ -87,6 +87,9 @@ private:
 	UPROPERTY()
 	AActor* ActorBeenHit;
 
+	UPROPERTY()
+	AActor* ActorIsCharacter;
+
 	FTimerHandle CheckForInteractiveTimer;
 	UFUNCTION()
 	void CheckForInteractive();
@@ -107,6 +110,7 @@ private:
 public:
 	void SetDetailsWidgetRef(UAI_DetailsWidget* WidgetIn);
 
+	UFUNCTION()
 	void ShowDetailsWidget();
 };
 

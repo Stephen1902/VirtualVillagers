@@ -20,6 +20,7 @@ class VV_API UPlayerWidget : public UUserWidget
 protected:
 	// Called on Game State
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Widget", META=(BindWidget))
 	UTextBlock* DayText;

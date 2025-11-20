@@ -26,7 +26,17 @@ void UPlayerWidget::NativeConstruct()
 		}
 	}
 
-	DetailsButton->OnClicked.AddDynamic(this, &UPlayerWidget::OnDetailsButtonClicked);
+	if (!DetailsButton->OnClicked.IsBound())
+	{
+		DetailsButton->OnClicked.AddDynamic(this, &UPlayerWidget::OnDetailsButtonClicked);
+	}
+}
+
+void UPlayerWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	
 }
 
 void UPlayerWidget::OnTimeChangeReceived(FText Minutes, FText Hours, float Clockwork)
@@ -42,10 +52,9 @@ void UPlayerWidget::OnDayChangeReceived(FText DayAtText, int32 DayAsInt)
 
 void UPlayerWidget::OnDetailsButtonClicked()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Clicked"));
 	if (AVVPlayerController* PC = Cast<AVVPlayerController>(GetOwningPlayer()))
 	{
-		
+		PC->ShowDetailsWidget();
 	}
 }
 

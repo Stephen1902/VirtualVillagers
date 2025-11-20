@@ -157,6 +157,9 @@ public:
 	void UpdateDraggedPosition();
 	void DragHasEnded();
 
+	
+	FCharDetails GetCharDetails() const;
+	void DetailsWidgetClosed();
 private:
 	UPROPERTY()
 	UDataTable* CharacterDataTable;

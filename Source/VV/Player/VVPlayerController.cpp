@@ -5,9 +5,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PlayerWidget.h"
-#include "Components/Image.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "VV/TP_ThirdPerson/AI_DetailsWidget.h"
@@ -21,12 +18,14 @@ AVVPlayerController::AVVPlayerController()
 	PlayerPawnRef = nullptr;
 	PlayerWidgetRef = nullptr;
 	ActorBeenHit = nullptr;
+	ActorIsCharacter = nullptr;
 	bIsDragging = false;
 	TimeLeftHeld = 0.f;
 	TimeBeforeDragging = 0.5f;
 
 	bIsHolding = false;
 	CharacterToDrag = nullptr;
+	DetailsWidgetRef = nullptr;
 }
 
 void AVVPlayerController::BeginPlay()
@@ -53,6 +52,11 @@ void AVVPlayerController::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("No player widget has been set in VVPlayerController."))
 	}
 
+	if (AI_DetailsWidget)
+	{
+		DetailsWidgetRef = CreateWidget<UAI_DetailsWidget>(this, AI_DetailsWidget);
+	}
+	
 	// Call to ensure we're not trying to pan on game start
 	PanCameraReleased();
 
@@ -235,7 +239,7 @@ void AVVPlayerController::CheckForEdgeMovement()
 	InputMode.SetConsumeCaptureMouseDown(true);
 	SetInputMode(InputMode);
 	*/
-	if (PlayerPawnRef)
+	if (PlayerPawnRef && !DetailsWidgetRef->IsInViewport())
 	{
 		/**
 		const float MouseXFloat = InputComponent->GetAxisValue(TEXT("MOUSEX"));
@@ -334,6 +338,7 @@ void AVVPlayerController::DealWithLeftMouseReleased()
 	{
 		if (ActorBeenHit && UKismetSystemLibrary::DoesImplementInterface(ActorBeenHit, UInteractInterface::StaticClass()))
 		{
+			ActorIsCharacter = ActorBeenHit;
 			FText ItemNameInfo;
 			FText ItemDescInfo;
 			Execute_GetItemInfo(ActorBeenHit, ItemNameInfo, ItemDescInfo);
@@ -342,6 +347,7 @@ void AVVPlayerController::DealWithLeftMouseReleased()
 		}
 		else
 		{
+			ActorIsCharacter = nullptr;
 			const FText BlankText = FText::FromString("");
 			PlayerWidgetRef->SetItemInfo(BlankText, BlankText);
 		}
@@ -437,23 +443,29 @@ void AVVPlayerController::SetDetailsWidgetRef(UAI_DetailsWidget* WidgetIn)
 
 void AVVPlayerController::ShowDetailsWidget()
 {
-	if (AI_DetailsWidget && PlayerWidgetRef)
+	if (DetailsWidgetRef && PlayerWidgetRef && CharacterToDrag)
 	{
-		if (!DetailsWidgetRef)
-		{
-			DetailsWidgetRef = CreateWidget<UAI_DetailsWidget>(this, AI_DetailsWidget);
-		}
-
 		// Check if it's the player widget in the viewport, swap with the details widget
 		if (PlayerWidgetRef->IsInViewport())
 		{
 			PlayerWidgetRef->RemoveFromParent();
-			DetailsWidgetRef->AddToViewport();
+			if (!DetailsWidgetRef->IsInViewport())
+			{
+				DetailsWidgetRef->AddToViewport();
+				DetailsWidgetRef->SetControllerRef(this);
+				DetailsWidgetRef->SetActorBeenHit(ActorIsCharacter);
+
+				// Pause the timer so there's no checking for an interactive item while the details widget is open
+				GetWorld()->GetTimerManager().PauseTimer(CheckForInteractiveTimer);
+			}
 		}
 		else
 		{
 			DetailsWidgetRef->RemoveFromParent();
 			PlayerWidgetRef->AddToViewport();
+
+			// Resume the check for interactive items 
+			GetWorld()->GetTimerManager().UnPauseTimer(CheckForInteractiveTimer);
 		}
 	}
 }

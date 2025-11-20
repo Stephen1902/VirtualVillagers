@@ -59,6 +59,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	RenderCameraComp->SetRelativeLocation(FVector(-1000.f, 0.f, 0.f));
 	RenderCameraComp->FOVAngle = 10.f;
 	RenderCameraComp->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
+	RenderCameraComp->SetAutoActivate(false);
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -170,6 +171,24 @@ void ATP_ThirdPersonCharacter::UpdateDraggedPosition()
 void ATP_ThirdPersonCharacter::DragHasEnded()
 {
 	bIsBeingDragged = false;
+}
+
+FCharDetails ATP_ThirdPersonCharacter::GetCharDetails() const
+{
+	if (RenderCameraComp)
+	{
+		RenderCameraComp->Activate();
+	}
+
+	return CharDetails;
+}
+
+void ATP_ThirdPersonCharacter::DetailsWidgetClosed()
+{
+	if (RenderCameraComp)
+	{
+		RenderCameraComp->Deactivate();
+	}
 }
 
 void ATP_ThirdPersonCharacter::UpdateStageInfo()
