@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "AI_Needs.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnNeedsUpdated, float, Health, float, Food, float, Water);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class VV_API UAI_Needs : public UActorComponent
 {
@@ -42,6 +44,11 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void CharacterNeedsUpdated(const bool IsDead, const float NewFoodDrain, const float NewWaterDrain, const float NewHealingRate);
+
+	void UpdateWidgetOnScreen(bool WidgetStateIn);
+
+	UPROPERTY()
+	FOnNeedsUpdated OnNeedsUpdated;
 private:
 	float CurrentFood;
 	float CurrentWater;
@@ -64,4 +71,7 @@ private:
 	void HealingTimerEnded();
 			
 	bool bIsDead;
+	bool WidgetOnScreen;
+
+	void BroadcastNeeds();
 };

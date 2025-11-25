@@ -9,6 +9,7 @@
 class UImage;
 class UButton;
 class UTextBlock;
+class UProgressBar;
 class AVVPlayerController;
 class ATP_ThirdPersonCharacter;
 
@@ -32,6 +33,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI Widget", meta=(BindWidget))
 	UTextBlock* LastNameText;
+
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI Widget", meta=(BindWidget))
+	UProgressBar* HealthProgressBar;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI Widget", meta=(BindWidget))
+	UProgressBar* FoodProgressBar;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI Widget", meta=(BindWidget))
+	UProgressBar* WaterProgressBar;
 public:
 	UImage* GetCharRender() const { return CharRender; }
 
@@ -43,6 +55,9 @@ private:
 
 	UFUNCTION()
 	void OnCloseButtonClicked();
+
+	UFUNCTION()
+	void OnNeedsUpdated(float HealthIn, float FoodIn, float WaterIn);
 
 	UPROPERTY()
 	AVVPlayerController* PlayerControllerRef;

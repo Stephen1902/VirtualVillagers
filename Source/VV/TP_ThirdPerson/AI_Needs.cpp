@@ -30,7 +30,6 @@ UAI_Needs::UAI_Needs()
 	bIsDead = false;
 }
 
-
 // Called when the game starts
 void UAI_Needs::BeginPlay()
 {
@@ -86,10 +85,16 @@ void UAI_Needs::CharacterNeedsUpdated(const bool IsDead, const float NewFoodDrai
 	}
 }
 
+void UAI_Needs::UpdateWidgetOnScreen(const bool WidgetStateIn)
+{
+	WidgetOnScreen = WidgetStateIn;
+}
+
 void UAI_Needs::FoodDrainTimerEnded()
 {
 	CurrentFood = FMath::Clamp((CurrentFood - (LocalFoodDrain * FoodDrainFrequency)), 0.f, MaximumFood);
-
+	
+	BroadcastNeeds();
 	//  TODO What to do if food gets too low
 }
 
@@ -97,13 +102,14 @@ void UAI_Needs::WaterDrainTimerEnded()
 {
 	CurrentWater = FMath::Clamp(CurrentWater - (LocalWaterDrain * WaterDrainFrequency), 0.f, MaximumWater);
 
+	BroadcastNeeds();
 	// TODO What to do if water gets too low
 }
 
 void UAI_Needs::HealingTimerEnded()
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth + (LocalHealing * HealingFrequency), 0.f, 100.f);
-		
+	
 	// Check if the character's health is at maximum, clear the timer if it is
 	if (CurrentHealth >= MaximumHealth)
 	{
@@ -112,5 +118,19 @@ void UAI_Needs::HealingTimerEnded()
 		{
 			GetWorld()->GetTimerManager().ClearTimer(HealthTimer);
 		}
+	}
+
+	BroadcastNeeds();
+}
+
+void UAI_Needs::BroadcastNeeds()
+{
+	if (WidgetOnScreen)
+	{
+		const float BroadcastHealth = 1 - ((MaximumHealth - CurrentHealth) / MaximumHealth);
+		const float BroadcastFood = 1 - ((MaximumFood - CurrentFood) / MaximumFood);
+		const float BroadcastWater = 1 - ((MaximumWater - CurrentWater) / MaximumWater);
+
+		OnNeedsUpdated.Broadcast(BroadcastHealth, BroadcastFood, BroadcastWater);
 	}
 }

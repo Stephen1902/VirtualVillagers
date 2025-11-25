@@ -162,6 +162,8 @@ public:
 	
 	FCharDetails GetCharDetails();
 	void DetailsWidgetClosed();
+
+	UAI_Needs* GetAINeeds() { return AINeedsComp; }
 private:
 	UPROPERTY()
 	UDataTable* CharacterDataTable;

@@ -2,8 +2,11 @@
 
 
 #include "AI_DetailsWidget.h"
+
+#include "AI_Needs.h"
 #include "TP_ThirdPersonCharacter.h"
 #include "Components/Button.h"
+#include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "VV/Player/VVPlayerController.h"
 
@@ -25,6 +28,11 @@ void UAI_DetailsWidget::SetActorBeenHit(AActor* ActorIn)
 
 		FirstNameText->SetText(CharDetails.FirstName);
 		LastNameText->SetText(CharDetails.LastName);
+
+		if (FocusedCharacter->GetAINeeds())
+		{
+			FocusedCharacter->GetAINeeds()->OnNeedsUpdated.AddDynamic(this, &UAI_DetailsWidget::OnNeedsUpdated);
+		}
 	}
 	else
 	{
@@ -50,4 +58,13 @@ void UAI_DetailsWidget::OnCloseButtonClicked()
 	{
 		PlayerControllerRef->ShowDetailsWidget();
 	}
+
+	FocusedCharacter->GetAINeeds()->OnNeedsUpdated.RemoveDynamic(this, &UAI_DetailsWidget::OnNeedsUpdated);
+}
+
+void UAI_DetailsWidget::OnNeedsUpdated(float HealthIn, float FoodIn, float WaterIn)
+{
+	HealthProgressBar->SetPercent(HealthIn);
+	FoodProgressBar->SetPercent(FoodIn);
+	WaterProgressBar->SetPercent(WaterIn);
 }
