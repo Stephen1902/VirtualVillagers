@@ -409,6 +409,7 @@ void AVVPlayerController::SeeIfDragging()
 
 void AVVPlayerController::TempActionPressed()
 {
+	/*
 	TArray<AActor*> Characters;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATP_ThirdPersonCharacter::StaticClass(), Characters);
 
@@ -416,9 +417,9 @@ void AVVPlayerController::TempActionPressed()
 	ATP_ThirdPersonCharacter* FoundCharacter = Cast<ATP_ThirdPersonCharacter>(Characters[1]);
 	if (FoundCharacter)
 	{
-		FoundCharacter->AddWidget(this);
+		//FoundCharacter->AddWidget(this);
 	}
-		/*
+		
 		USceneCaptureComponent2D* RenderTarget = FoundCharacter->GetRenderCamera();
 		
 		DetailsWidgetRef = CreateWidget<UAI_DetailsWidget>(this, AIDetailsWidget);

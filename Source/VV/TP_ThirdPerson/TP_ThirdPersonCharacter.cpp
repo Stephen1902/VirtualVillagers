@@ -111,17 +111,14 @@ void ATP_ThirdPersonCharacter::BeginPlay()
 			}
 		}
 	}
-/*
+
 	if (RenderCameraComp)
 	{
-		TArray<AActor*> ShownItems;
-		ShownItems.AddUnique(this);
-		//RenderCameraComp->
+		RenderCameraComp->Deactivate();
 	}
-
-	*/
+	
 }
-
+/*
 void ATP_ThirdPersonCharacter::AddWidget(AVVPlayerController* ControllerIn)
 {
 	if (ControllerIn && DetailsWidget)
@@ -131,7 +128,7 @@ void ATP_ThirdPersonCharacter::AddWidget(AVVPlayerController* ControllerIn)
 		ControllerIn->SetDetailsWidgetRef(DW);
 	}
 }
-
+*/
 void ATP_ThirdPersonCharacter::SetGameStateRef(AVVGameState* GameStateIn)
 {
 	/*if (GameStateIn)
@@ -175,6 +172,7 @@ void ATP_ThirdPersonCharacter::DragHasEnded()
 
 FCharDetails ATP_ThirdPersonCharacter::GetCharDetails() const
 {
+
 	if (RenderCameraComp)
 	{
 		RenderCameraComp->Activate();
@@ -256,7 +254,7 @@ void ATP_ThirdPersonCharacter::UpdateStageInfo()
 AActor* ATP_ThirdPersonCharacter::OnOverlapBegin_Implementation()
 {
 	IInteractInterface::OnOverlapBegin_Implementation();
-
+	
 	bCanBePickedUp = true;
 	GetMesh()->SetRenderCustomDepth(true);
 	

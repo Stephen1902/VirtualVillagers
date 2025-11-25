@@ -144,7 +144,7 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	void AddWidget(class AVVPlayerController* ControllerIn);
+	//void AddWidget(class AVVPlayerController* ControllerIn);
 	
 	UPROPERTY()
 	AVVGameState* GameStateRef;
