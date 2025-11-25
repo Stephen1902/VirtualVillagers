@@ -113,6 +113,9 @@ class ATP_ThirdPersonCharacter : public ACharacter, public IInteractInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USceneCaptureComponent2D* RenderCameraComp; 
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI Char", meta=(AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* RenderTarget;
+	
 protected:
 	// Called at game start
 	virtual void BeginPlay() override;
@@ -156,9 +159,8 @@ public:
 	void DragHasStarted();
 	void UpdateDraggedPosition();
 	void DragHasEnded();
-
 	
-	FCharDetails GetCharDetails() const;
+	FCharDetails GetCharDetails();
 	void DetailsWidgetClosed();
 private:
 	UPROPERTY()

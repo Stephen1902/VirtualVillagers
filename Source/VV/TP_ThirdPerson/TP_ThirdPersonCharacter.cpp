@@ -53,6 +53,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	RenderSceneComp->SetupAttachment(GetRootComponent());
 	RenderSceneComp->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
 
+	
 	// Create the render component
 	RenderCameraComp = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Render Camera Comp"));
 	RenderCameraComp->SetupAttachment(RenderSceneComp);
@@ -60,6 +61,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	RenderCameraComp->FOVAngle = 10.f;
 	RenderCameraComp->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
 	RenderCameraComp->SetAutoActivate(false);
+	RenderCameraComp->TextureTarget = nullptr;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -170,14 +172,17 @@ void ATP_ThirdPersonCharacter::DragHasEnded()
 	bIsBeingDragged = false;
 }
 
-FCharDetails ATP_ThirdPersonCharacter::GetCharDetails() const
+FCharDetails ATP_ThirdPersonCharacter::GetCharDetails()
 {
-
-	if (RenderCameraComp)
+	if (RenderTarget)
 	{
-		RenderCameraComp->Activate();
+		RenderCameraComp->TextureTarget = RenderTarget;
 	}
-
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RenderTarget is not set in TP_ThirsPersonCharacter"));
+	}
+	
 	return CharDetails;
 }
 
@@ -185,7 +190,7 @@ void ATP_ThirdPersonCharacter::DetailsWidgetClosed()
 {
 	if (RenderCameraComp)
 	{
-		RenderCameraComp->Deactivate();
+		RenderCameraComp->TextureTarget = nullptr;
 	}
 }
 
