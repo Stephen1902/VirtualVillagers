@@ -29,9 +29,12 @@ void UAI_DetailsWidget::SetActorBeenHit(AActor* ActorIn)
 		FirstNameText->SetText(CharDetails.FirstName);
 		LastNameText->SetText(CharDetails.LastName);
 
-		if (FocusedCharacter->GetAINeeds())
+		UAI_Needs* AI_Needs = FocusedCharacter->GetAINeeds();
+		if (AI_Needs)
 		{
-			FocusedCharacter->GetAINeeds()->OnNeedsUpdated.AddDynamic(this, &UAI_DetailsWidget::OnNeedsUpdated);
+			AI_Needs->UpdateWidgetOnScreen(true);
+			AI_Needs->OnNeedsUpdated.AddDynamic(this, &UAI_DetailsWidget::OnNeedsUpdated);
+			
 		}
 	}
 	else
@@ -52,6 +55,7 @@ void UAI_DetailsWidget::OnCloseButtonClicked()
 	if (FocusedCharacter)
 	{
 		FocusedCharacter->DetailsWidgetClosed();
+		FocusedCharacter->GetAINeeds()->UpdateWidgetOnScreen(false);
 	}
 	
 	if (PlayerControllerRef)

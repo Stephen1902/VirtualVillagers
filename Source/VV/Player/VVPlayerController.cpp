@@ -456,6 +456,8 @@ void AVVPlayerController::ShowDetailsWidget()
 				DetailsWidgetRef->SetControllerRef(this);
 				DetailsWidgetRef->SetActorBeenHit(ActorIsCharacter);
 
+				
+
 				// Pause the timer so there's no checking for an interactive item while the details widget is open
 				GetWorld()->GetTimerManager().PauseTimer(CheckForInteractiveTimer);
 			}

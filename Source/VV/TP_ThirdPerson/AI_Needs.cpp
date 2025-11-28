@@ -15,9 +15,9 @@ UAI_Needs::UAI_Needs()
 	WaterDrainFrequency = 0.1f; // 10 times per second
 	HealingFrequency = 0.1f;  // 10 times per second
 
-	LocalFoodDrain = 0.f;
-	LocalWaterDrain = 0.f;
-	LocalHealing = 0.f;
+	LocalFoodDrain = 1.f;
+	LocalWaterDrain = 1.5f;
+	LocalHealing = 2.f;
 
 	// Set maximum amount items can go up with eating, drinking etc.
 	MaximumFood = 120.f;
@@ -26,7 +26,7 @@ UAI_Needs::UAI_Needs()
 
 	CurrentFood = 100.f;
 	CurrentWater = 100.f;
-	CurrentHealth = 100.f;
+	CurrentHealth = 40.f;
 	bIsDead = false;
 }
 
@@ -88,20 +88,24 @@ void UAI_Needs::CharacterNeedsUpdated(const bool IsDead, const float NewFoodDrai
 void UAI_Needs::UpdateWidgetOnScreen(const bool WidgetStateIn)
 {
 	WidgetOnScreen = WidgetStateIn;
+
+	if (WidgetOnScreen)
+	{
+		BroadcastNeeds();
+	}
 }
 
 void UAI_Needs::FoodDrainTimerEnded()
 {
-	CurrentFood = FMath::Clamp((CurrentFood - (LocalFoodDrain * FoodDrainFrequency)), 0.f, MaximumFood);
-	
+	CurrentFood = FMath::Clamp(CurrentFood - (LocalFoodDrain * FoodDrainFrequency), 0.f, MaximumFood);
+	//UE_LOG(LogTemp, Warning, TEXT("Food: %s"), *FString::SanitizeFloat(CurrentFood));
 	BroadcastNeeds();
 	//  TODO What to do if food gets too low
 }
 
 void UAI_Needs::WaterDrainTimerEnded()
-{
+{	
 	CurrentWater = FMath::Clamp(CurrentWater - (LocalWaterDrain * WaterDrainFrequency), 0.f, MaximumWater);
-
 	BroadcastNeeds();
 	// TODO What to do if water gets too low
 }
@@ -109,7 +113,7 @@ void UAI_Needs::WaterDrainTimerEnded()
 void UAI_Needs::HealingTimerEnded()
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth + (LocalHealing * HealingFrequency), 0.f, 100.f);
-	
+
 	// Check if the character's health is at maximum, clear the timer if it is
 	if (CurrentHealth >= MaximumHealth)
 	{
