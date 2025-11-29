@@ -69,9 +69,11 @@ private:
 	FTimerHandle HealthTimer;
 	UFUNCTION()
 	void HealingTimerEnded();
+
+	FTimerHandle BroadcastNeedsTimer;
+	UFUNCTION()
+	void NeedsTimerEnded();
 			
 	bool bIsDead;
 	bool WidgetOnScreen;
-
-	void BroadcastNeeds();
 };
